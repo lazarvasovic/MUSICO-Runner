@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Utility functions
+abspath () 
+{ 
+    if [ -d "$1" ]; then
+        echo "$(cd "$1"; pwd)";
+    else
+        case "$1" in 
+            "" | ".")
+                echo "$PWD"
+            ;;
+            /*)
+                echo "$1"
+            ;;
+            *)
+                echo "$PWD/$1"
+            ;;
+        esac;
+    fi
+}
+
+THIS_DIR=$(abspath $(dirname "$0"))
+NODE_PATH=$THIS_DIR/share/nodejs/node-v10.15.0-linux-x64/bin
+PATH=$NODE_PATH:$PATH
+export PATH NODE_PATH
+exec "$NODE_PATH/node" "$@"
