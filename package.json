@@ -20,6 +20,7 @@
     "morgan": "^1.9.1",
     "multer": "^1.4.1",
     "node-cron": "^2.0.3",
+    "sync": "^0.2.5",
     "unzip": "^0.1.11",
     "unzipper": "^0.9.7",
     "zip-folder": "^1.0.0"

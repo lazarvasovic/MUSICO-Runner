@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#PBS -N Musico
+#PBS -N BlockingJobs
 #PBS -q batch
 
 #PBS -l nodes=1:ppn=1
@@ -12,4 +12,4 @@ exe=${exe}
 
 chmod +x $exe
 
-time `./$exe > log.txt`
+`./$exe > log.txt`

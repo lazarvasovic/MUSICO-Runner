@@ -90,6 +90,13 @@ router.post('/run', function (req, res) {
     );
 });
 
+router.post('/run-sync', function (req, res) {
+    const calcIds = req.body.calcIds;
+    console.log('run called');
+    const result = calcController.runCalculationsSync(calcIds);
+    res.json({ success: true, runData: result });
+});
+
 router.post('/get-calcs', function (req, res) {
     const userName = req.decoded.username;
     calcController.getCalculations(

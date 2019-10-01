@@ -3,6 +3,9 @@ const User = require('../models/user');
 const Unit = require('../models/unit');
 const Calculation = require('../models/calc');
 
+// Read configuration file
+const config = require('../config');
+
 // Modules
 const fs = require('fs');
 const path = require('path');
@@ -10,6 +13,8 @@ const async = require('async');
 const unzipper = require('unzipper');
 const zipFolder = require('zip-folder');
 const exec = require('child_process').exec;
+//var Sync = require('sync');
+
 
 const trimExtension = function (name) {
     return name.slice(0, name.lastIndexOf('.'));
@@ -106,7 +111,7 @@ const runCalculations = function (calcIds, callback) {
     async.times(calcIds.length, function (n, next) {
         extractAndCreateUnits(calcIds[n], function (err, units) {
             console.log(units);
-            runCalculation(calcIds[n], function (err, data) {
+            runCalculation(calcIds[n], false, function (err, data) {
                 console.log(data);
                 next(err, data);
             });
@@ -114,6 +119,15 @@ const runCalculations = function (calcIds, callback) {
     }, function (err, data) {
         return callback(err, data);
     });
+}; // nova
+
+const runCalculationsSync = function (calcIds) {
+    //Sync(function() {
+        //data = runCalculation.sync(null, calcIds, true);
+        //return data;
+    //});
+
+    return null;
 }; // nova
 
 const extractAndCreateUnits = function (calcId, callback) {
@@ -136,7 +150,7 @@ const extractAndCreateUnits = function (calcId, callback) {
     });
 }; // nova
 
-const runCalculation = function (calcId, callback) {
+const runCalculation = function (calcId, isSync, callback) {
     const date = new Date();
 
     Calculation.findById(calcId, function (err, calc) {
@@ -162,22 +176,31 @@ const runCalculation = function (calcId, callback) {
         });
     });
 
+    let runScriptName = 'run.sh'
+    let startMScriptName = 'startM.sub'
+
+    if (isSync) {
+        runScriptName = 'run-sync.sh';
+        startMScriptName = 'startM-sync.sub'
+    }
+
     fs.copyFileSync(
-        path.join(__dirname, '..', 'exes', 'MusicoExeFinal'),
-        path.join(__dirname, '..', 'runnings', calcId, 'MusicoExeFinal')
+        //path.join(__dirname, '..', 'exes', 'MusicoExeFinal'),
+        path.join(config.exeFile.fullPath),
+        path.join(__dirname, '..', 'runnings', calcId, config.exeFile.name)
     );
     fs.copyFileSync(
-        path.join(__dirname, '..', 'exes', 'run.sh'),
-        path.join(__dirname, '..', 'runnings', calcId, 'run.sh')
+        path.join(__dirname, '..', 'exes', runScriptName),
+        path.join(__dirname, '..', 'runnings', calcId, runScriptName)
     );
     fs.copyFileSync(
-        path.join(__dirname, '..', 'exes', 'startM.sub'),
-        path.join(__dirname, '..', 'runnings', calcId, 'startM.sub')
+        path.join(__dirname, '..', 'exes', startMScriptName),
+        path.join(__dirname, '..', 'runnings', calcId, startMScriptName)
     );
 
-    const pathToRunSh = path.join(__dirname, '..', 'runnings', calcId, 'run.sh');
+    const pathToRunSh = path.join(__dirname, '..', 'runnings', calcId, runScriptName);
     const pathToCalc = path.join(__dirname, '..', 'runnings', calcId);
-    const command = `bash ${pathToRunSh} ${pathToCalc}`;
+    const command = `bash ${pathToRunSh} ${pathToCalc} ${config.exeFile.name}`;
     exec(command, function (error, stdout, stderr) {
         if (!error) {
             const output = stdout.trim().split('\n');
@@ -423,6 +446,7 @@ module.exports = {
     createCalculations,
     // createCalculationAndUnits, // ne treba exportovati
     runCalculations,
+    runCalculationsSync,
     //createUnitsAndRunCalculation,
     downloadCalc,
     removeCalc,
